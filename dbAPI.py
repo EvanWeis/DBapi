@@ -74,7 +74,7 @@ def insert_row(table_name: str, row: tuple) -> None:
             conn.commit()
             conn.close()
 
-def fetch_all(table_name: str, cols: str, params: str = '') -> None:
+def fetch_all(table_name: str, cols: str, params: str = '') -> list:
     try: 
 
         conn = sqlite3.connect(db_file)
@@ -88,7 +88,7 @@ def fetch_all(table_name: str, cols: str, params: str = '') -> None:
         if conn: 
             conn.close()
 
-def fetch_one(table_name: str, cols: str, params: str = '') -> None:
+def fetch_one(table_name: str, cols: str, params: str = '') -> list:
     try: 
 
         conn = sqlite3.connect(db_file)
@@ -130,6 +130,21 @@ def delete_data(table_name: str, where: str) -> None:
             conn.commit()
             conn.close()
 
+def execute_query(sql_query: str) -> list: 
+    try:
+
+        conn = sqlite3.connect(db_file)
+        cur = conn.cursor()
+        for row in cur.execute('{}'.format(sql_query)):
+            print(row)
+
+    except Error as e:
+        print(e)
+    finally:
+        if conn:
+            conn.commit()
+            conn.close()
+
 def main():
 
     create_connection("C:\\Users\weise\Documents\\Projects\\edgarDB\\test.db")
@@ -141,8 +156,10 @@ def main():
 
     print('\nfetch all:')
     op = fetch_all('test', 'rowid, b,c')
+    print(type(op))
     [print(i) for i in op]
 
-    
+    print("\nexecute query")
+    print(execute_query('SELECT b, AVG(c) FROM test'))
 
 if __name__=="__main__": main()
