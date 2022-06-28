@@ -74,13 +74,27 @@ def insert_row(table_name: str, row: tuple) -> None:
             conn.commit()
             conn.close()
 
-def read_table(table_name: str, cols: str, params: str = '') -> None:
+def fetch_all(table_name: str, cols: str, params: str = '') -> None:
     try: 
 
         conn = sqlite3.connect(db_file)
         cur = conn.cursor()
         for row in cur.execute("SELECT {} FROM {} {}".format(cols, table_name, params)):
             return cur.fetchall()
+
+    except Error as e:
+        print(e)
+    finally:
+        if conn: 
+            conn.close()
+
+def fetch_one(table_name: str, cols: str, params: str = '') -> None:
+    try: 
+
+        conn = sqlite3.connect(db_file)
+        cur = conn.cursor()
+        for row in cur.execute("SELECT {} FROM {} {}".format(cols, table_name, params)):
+            return cur.fetchone()
 
     except Error as e:
         print(e)
@@ -125,9 +139,10 @@ def main():
     for i in data:
         insert_row('test ( b, c )', i )
 
-    print('\nfirst read:')
-    op = read_table('test', 'rowid, b,c')
+    print('\nfetch all:')
+    op = fetch_all('test', 'rowid, b,c')
     [print(i) for i in op]
+
     
 
 if __name__=="__main__": main()
