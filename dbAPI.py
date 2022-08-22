@@ -58,7 +58,7 @@ def drop_table(table_name: str) -> None:
             conn.commit()
             conn.close()
 
-def insert_row(table_name: str, row: tuple) -> None:
+def insert_one(table_name: str, row: tuple) -> None:
     try:
 
         conn = sqlite3.connect(db_file)
@@ -74,13 +74,34 @@ def insert_row(table_name: str, row: tuple) -> None:
             conn.commit()
             conn.close()
 
-def fetch_all(table_name: str, cols: str, params: str = '') -> list:
+def insert_many(table_name: str = None, rows: list = None) -> None:
+    try:
+
+        list_len = [len(i) for i in rows]
+        max_len = max(list_len)
+        list_index = []
+        for i in range(max_len):
+            list_index.append("?")
+        insert_values = ",".join(list_index)
+        formatted_string = "INSERT INTO {} VALUES ({})".format(table_name, insert_values)
+
+        conn = sqlite3.connect(db_file)
+        conn.executemany(formatted_string, rows)
+
+    except Error as e:
+        print(e)
+    finally:
+        if conn: 
+            conn.commit()
+            conn.close()
+
+def fetch_all(table_name: str) -> list:
     try: 
 
         conn = sqlite3.connect(db_file)
         cur = conn.cursor()
-        for row in cur.execute("SELECT {} FROM {} {}".format(cols, table_name, params)):
-            return cur.fetchall()
+        cur.execute("SELECT * FROM {}".format(table_name))
+        return cur.fetchall()
 
     except Error as e:
         print(e)
@@ -147,19 +168,33 @@ def execute_query(sql_query: str) -> list:
 
 def main():
 
-    create_connection("C:\\Users\weise\Documents\\Projects\\edgarDB\\test.db")
-    create_table('test', 'b text, c float')
+    create_connection("C:\\Users\weise\Documents\\Projects\\DBAPI\\test.db")
+    create_table('test', 'b text, c int')
 
     data = [('data', 1), ('smoke', 2), ('trust', 100), ('a', 200)]
     for i in data:
-        insert_row('test ( b, c )', i )
+        insert_one('test ( b, c )', i )
 
-    print('\nfetch all:')
-    op = fetch_all('test', 'rowid, b,c')
+    print('\nfetch one:')
+    op = fetch_one('test', 'rowid, b,c')
     print(type(op))
-    [print(i) for i in op]
+    print(op)
 
     print("\nexecute query")
-    print(execute_query('SELECT b, AVG(c) FROM test'))
+    print(execute_query('SELECT AVG(c) FROM test'))
+
+    drop_table('test')
+    create_table('test2', 'a text, b text, c text, d text, e text')
+
+    test = [("one", "two", "three", "four", "five"),("bag", "hat","jacket", "sock", "shoe"),("apple", "pear", "grape", "orange", "banana")]
+
+    print("\ninsert many, fetchall")
+    insert_many('test2', test)
+
+    op = fetch_all('test2')
+    [print(i) for i in op]
+
+
+
 
 if __name__=="__main__": main()
