@@ -95,12 +95,12 @@ def insert_many(table_name: str = None, rows: list = None) -> None:
             conn.commit()
             conn.close()
 
-def fetch_all(table_name: str) -> list:
+def fetch_all(table_name: str, cols: str, params: str = '') -> list:
     try: 
 
         conn = sqlite3.connect(db_file)
         cur = conn.cursor()
-        cur.execute("SELECT * FROM {}".format(table_name))
+        cur.execute("SELECT {} FROM {} {}".format(cols, table_name, params))
         return cur.fetchall()
 
     except Error as e:
@@ -114,8 +114,8 @@ def fetch_one(table_name: str, cols: str, params: str = '') -> list:
 
         conn = sqlite3.connect(db_file)
         cur = conn.cursor()
-        for row in cur.execute("SELECT {} FROM {} {}".format(cols, table_name, params)):
-            return cur.fetchone()
+        cur.execute("SELECT {} FROM {} {}".format(cols, table_name, params))
+        return cur.fetchone()
 
     except Error as e:
         print(e)
@@ -191,10 +191,7 @@ def main():
     print("\ninsert many, fetchall")
     insert_many('test2', test)
 
-    op = fetch_all('test2')
+    op = fetch_all('test2', '*')
     [print(i) for i in op]
-
-
-
 
 if __name__=="__main__": main()
